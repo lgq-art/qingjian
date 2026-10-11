@@ -5,7 +5,7 @@ use std::sync::Arc;
 use std::thread;
 
 use qingjian_platform::ClipboardConfig;
-use tokio::sync::mpsc::{self, UnboundedReceiver, UnboundedSender};
+use tokio::sync::mpsc::{self, UnboundedReceiver};
 
 use crate::crypto::{Cipher, derive_key};
 use crate::error::ClipboardError;
@@ -30,7 +30,7 @@ impl ClipboardService {
         let history = Arc::new(ClipboardHistory::new(config.history_size));
         let writer = Arc::new(ClipboardWriter::new());
 
-        let (manual_tx, manual_rx) = mpsc::unbounded_channel::<String>();
+        let (manual_tx, mut manual_rx) = mpsc::unbounded_channel::<String>();
         let (local_tx, local_rx) = mpsc::unbounded_channel::<(String, u64)>();
         let (incoming_tx, incoming_rx) = mpsc::channel::<ClipboardItem>(64);
 
@@ -45,12 +45,7 @@ impl ClipboardService {
             },
         );
 
-        // 处理主动 push_text 的转发通道
         let manual_to_local_tx = local_tx.clone();
-        tokio::spawn_or_thread(manual_rx, move |text| {
-            let hash = hash_payload(text.as_bytes());
-            let _ = manual_to_local_tx.send((text, hash));
-        });
 
         let (ready_tx, ready_rx) = std::sync::mpsc::sync_channel::<Result<Arc<DiscoveryService>, String>>(1);
 
@@ -73,7 +68,7 @@ impl ClipboardService {
         thread::Builder::new()
             .name("qingjian-clipboard-service".to_string())
             .spawn(move || {
-                let rt = match tokio::runtime::Builder::new_multi_thread()
+                let rt = match tokio::runtime::Builder::new_current_thread()
                     .enable_all()
                     .build()
                 {
@@ -85,6 +80,14 @@ impl ClipboardService {
                 };
 
                 rt.block_on(async move {
+                    // 处理主动 push_text 的转发通道
+                    tokio::spawn(async move {
+                        while let Some(text) = manual_rx.recv().await {
+                            let hash = hash_payload(text.as_bytes());
+                            let _ = manual_to_local_tx.send((text, hash));
+                        }
+                    });
+
                     // 1. 启动 TCP 接收服务端
                     if let Err(e) = TcpServer::start(s_port, s_cipher.clone(), s_max_size, incoming_tx).await {
                         tracing::error!(%e, port = s_port, "TCP 剪贴板监听服务启动失败");
@@ -143,20 +146,6 @@ impl ClipboardService {
             discovery,
             manual_tx,
         ))
-    }
-}
-
-trait SpawnOrThread {
-    fn spawn_or_thread<F: Fn(String) + Send + 'static>(rx: UnboundedReceiver<String>, handler: F);
-}
-
-impl SpawnOrThread for tokio::sync::mpsc::UnboundedReceiver<String> {
-    fn spawn_or_thread<F: Fn(String) + Send + 'static>(mut rx: UnboundedReceiver<String>, handler: F) {
-        thread::spawn(move || {
-            while let Some(msg) = rx.blocking_recv() {
-                handler(msg);
-            }
-        });
     }
 }
 
