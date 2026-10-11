@@ -270,6 +270,21 @@ fn main() {
         "青简 Windows Server 就绪"
     );
 
+    let _clipboard_handle = if config.clipboard.enabled {
+        match qingjian_clipboard::ClipboardService::spawn(&config.clipboard) {
+            Ok(handle) => {
+                tracing::info!(device = %config.clipboard.effective_device_name(), "局域网共享剪贴板服务已启动");
+                Some(handle)
+            }
+            Err(error) => {
+                tracing::error!(%error, "局域网共享剪贴板服务启动失败");
+                None
+            }
+        }
+    } else {
+        None
+    };
+
     serve(router);
 }
 

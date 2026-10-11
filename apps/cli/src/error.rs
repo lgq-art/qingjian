@@ -46,4 +46,7 @@ pub enum CliError {
 
     #[error(transparent)]
     Tune(#[from] crate::tuning::TuneError),
+
+    #[error("clipboard error: {0}")]
+    Clipboard(String),
 }

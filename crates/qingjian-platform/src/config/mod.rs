@@ -2,6 +2,7 @@ mod appearance;
 mod apps;
 mod aux_code;
 mod candidate_renderer;
+mod clipboard;
 mod dictionaries;
 mod font_size;
 mod general;
@@ -34,6 +35,9 @@ pub use apps::{
 };
 pub use aux_code::AuxCodeConfig;
 pub use candidate_renderer::CandidateRenderer;
+pub use clipboard::{
+    ClipboardConfig, DEFAULT_CLIPBOARD_PORT, DEFAULT_HISTORY_SIZE, DEFAULT_MAX_SIZE_BYTES,
+};
 pub use dictionaries::{DEFAULT_DOMAINS, DictionariesConfig};
 pub use font_size::FontSize;
 pub use general::{
@@ -92,6 +96,9 @@ pub struct Config {
 
     /// 检查更新。
     pub update: UpdateConfig,
+
+    /// 局域网共享剪贴板。
+    pub clipboard: ClipboardConfig,
 }
 
 fn deserialize_phrases<'de, D: serde::Deserializer<'de>>(
@@ -371,6 +378,24 @@ enabled = false
 check = true
 # 渠道：stable 只看正式版；beta 还会提示测试版（alpha / beta / rc）
 channel = "stable"
+
+[clipboard]
+# 局域网共享剪贴板：在同一 Wi-Fi / 局域网内的设备之间无缝同步剪贴板内容。默认关闭
+enabled = false
+# 本机设备名（留空自动使用计算机主机名）
+device_name = ""
+# 同步配对密钥（同一局域网内的设备必须配置相同的密钥，用于 ChaCha20-Poly1305 端到端加密）
+passphrase = ""
+# 广播与通信端口
+port = 41258
+# 接收远端内容后是否自动覆盖本机系统剪贴板（Ctrl+V 直接粘贴）；false 则仅存入历史记录
+auto_sync = true
+# 剪贴板历史保留条数
+history_size = 20
+# 单次同步最大字节数（默认 5 MB）
+max_size_bytes = 5242880
+# 静态节点列表（可选，在禁用 UDP 广播的局域网环境填写对端 IP:端口）
+static_peers = []
 "#
 );
 

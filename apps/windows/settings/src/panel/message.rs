@@ -58,6 +58,13 @@ pub(crate) enum Message {
     TestConnection,
     CloudTestDone(Result<String, String>),
 
+    // 剪贴板页
+    ClipboardEnabled(bool),
+    ClipboardAutoSync(bool),
+    ClipboardDeviceName(String),
+    ClipboardPassphrase(String),
+    ClipboardPort(Option<f64>),
+
     // 快捷键页
     PageKeys(Option<usize>),
     ModeExpression(Option<usize>),

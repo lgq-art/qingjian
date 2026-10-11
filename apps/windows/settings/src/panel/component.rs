@@ -180,6 +180,17 @@ impl Component for Settings {
                 };
             }
 
+            // 剪贴板页
+            Message::ClipboardEnabled(on) => self.save("clipboard", "enabled", on),
+            Message::ClipboardAutoSync(on) => self.save("clipboard", "auto_sync", on),
+            Message::ClipboardDeviceName(name) => self.save("clipboard", "device_name", name),
+            Message::ClipboardPassphrase(passphrase) => self.save("clipboard", "passphrase", passphrase),
+            Message::ClipboardPort(Some(port)) => {
+                let p = (port.round() as i64).clamp(1024, 65535);
+                self.save("clipboard", "port", p);
+            }
+            Message::ClipboardPort(None) => {}
+
             // 快捷键页
             Message::PageKeys(Some(i)) if i < shortcut::PAGE_KEYS.len() => {
                 self.save("general", "page_keys", shortcut::PAGE_KEYS[i].1);
@@ -357,6 +368,7 @@ impl Component for Settings {
             item("general", "通用", Symbol::Setting),
             item("candidates", "候选窗口", Symbol::View),
             item("shortcut", "快捷键", Symbol::Keyboard),
+            item("clipboard", "剪贴板", Symbol::Copy),
             item("cloud", "云服务", Symbol::World),
             item("fuzzy", "模糊音", Symbol::Audio),
             item("dictionaries", "词库", Symbol::Library),

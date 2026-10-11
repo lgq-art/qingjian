@@ -170,4 +170,8 @@ pub struct Args {
 
     /// 直接查询这些拼音后退出；不给则进入交互模式
     pub inputs: Vec<String>,
+
+    /// 局域网共享剪贴板子命令（watch / peers / send / serve）
+    #[command(subcommand)]
+    pub clipboard_cmd: Option<crate::clipboard::ClipboardSubcommand>,
 }

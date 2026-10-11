@@ -4,6 +4,7 @@ pub(super) mod about;
 pub(super) mod advanced;
 pub(super) mod aux_code;
 pub(super) mod candidates;
+pub(super) mod clipboard;
 pub(super) mod cloud;
 pub(super) mod dictionaries;
 pub(super) mod fuzzy;

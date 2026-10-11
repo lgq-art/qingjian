@@ -96,6 +96,15 @@ TSV 解析、查询与生成工具把 `lue` / `nue` 统一成 `lve` / `nve`。
 - 问字键（缺省 `u`）开头是问字模式（`PredictionKind::Question`，答案带读音、不校验拼音），`?` 开头要 `ModeKeys::question_mark` 开着才算（配置 `[shortcut] question_mark`，缺省关，壳用 `Engine::takes_question_mark` 决定空缓冲区的 `?` 是入口还是标点）；`PredictionKind::Translate` 是壳里快捷键触发的「翻译选中文字」
   （双向：汉字为主译成学习语言，外文译回中文，`prediction::translation_target`），译文走结果的 `sentence`。
 
+## crates/qingjian-clipboard
+
+局域网共享剪贴板：在同一 Wi-Fi 或局域网内提供端到端认证加密的剪贴板节点发现与自动双向同步。
+- 零配置发现：`DiscoveryService` 在 UDP 端口（默认 41258）每 3 秒发送 `BeaconPacket`（魔数 `QJCB`），自动维护在线节点列表与心跳超时清除（10 秒）。
+- 端到端加密：`Cipher` 基于 ChaCha20-Poly1305 AEAD，由用户 `[clipboard] passphrase` 经 SHA-256 派生 256 位对称密钥，每个数据包附加随机 12 字节 Nonce。
+- 回声抑制：`LoopSuppressor` 记录近期哈希与 TTL（15 秒），本地写入系统剪贴板后抑制事件再次回广播，杜绝局域网回环风暴。
+- 剪贴板适配：`ClipboardMonitor`（低负载自适应轮询）与 `ClipboardWriter` 经 `arboard` 跨平台适配 Windows、macOS 与 Linux。
+- 服务调度：`ClipboardService` 在专属多线程 tokio 运行时中托管，对外暴露 `ClipboardHandle`，不阻塞输入法内核与按键事件。
+
 ## crates/qingjian-format
 
 `.qj` 数据容器（`Container` mmap 读、`Writer` 写、`Table<T>` / `Text` 零拷贝视图、`hash` 可落盘哈希索引、`Metadata` 名称 / 许可证 / 署名）。

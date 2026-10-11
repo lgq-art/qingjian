@@ -4,6 +4,7 @@
 //! 不依赖任何平台 API，是 Core 的第一个「壳」。
 
 mod args;
+mod clipboard;
 mod cold;
 mod display;
 mod error;
@@ -39,6 +40,10 @@ fn main() {
 fn run() -> Result<(), CliError> {
     dotenvy::dotenv().ok();
     let args = Args::parse();
+    if let Some(cmd) = args.clipboard_cmd {
+        clipboard::handle(cmd).map_err(|e| CliError::Clipboard(e.to_string()))?;
+        return Ok(());
+    }
     let _log_guard = logging::init()?;
 
     let started = Instant::now();

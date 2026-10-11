@@ -1,0 +1,20 @@
+[package]
+name = "qingjian-clipboard"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+repository.workspace = true
+
+[dependencies]
+qingjian-platform = { workspace = true }
+serde = { workspace = true }
+serde_json = { workspace = true }
+thiserror = { workspace = true }
+tracing = { workspace = true }
+tokio = { workspace = true }
+arboard = { workspace = true }
+chacha20poly1305 = { workspace = true }
+sha2 = { workspace = true }
+rand = { workspace = true }
+foldhash = { workspace = true }
+uuid = { workspace = true }
