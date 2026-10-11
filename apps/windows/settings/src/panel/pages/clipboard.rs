@@ -42,10 +42,9 @@ pub(crate) fn view(settings: &Settings, context: &mut ViewContext<Settings>) -> 
             "通信与发现端口",
             "UDP 发现广播与 TCP 数据流通信端口（默认 41258，范围 1024–65535）。",
             NumberBox::new()
-                .value(cb.port as f64)
                 .minimum(1024.0)
                 .maximum(65535.0)
-                .spin_button_placement_mode(NumberBoxSpinButtonPlacementMode::Inline)
+                .value(cb.port as f64)
                 .on_value_changed(context.callback(Message::ClipboardPort)),
         ),
     ];
