@@ -47,12 +47,11 @@ pub(crate) fn view(settings: &Settings, context: &mut ViewContext<Settings>) -> 
                 .value(cb.port as f64)
                 .on_value_changed(context.callback(Message::ClipboardPort)),
         ),
+        note(
+            "提示：局域网共享功能需要 Windows 防火墙允许青简服务端（qingjian-server.exe）访问专用网络的 UDP 与 TCP 端口。",
+        ),
     ];
 
-    let content = StackPanel::new().spacing(16.0).children([
-        StackPanel::new().spacing(12.0).children(rows).into(),
-        note("提示：局域网共享功能需要 Windows 防火墙允许青简服务端（qingjian-server.exe）访问专用网络的 UDP 与 TCP 端口。").into(),
-    ]);
-
-    page("剪贴板", content)
+    page("剪贴板", StackPanel::new().spacing(16.0).children(rows))
 }
+
